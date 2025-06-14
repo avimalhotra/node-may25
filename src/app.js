@@ -1,42 +1,42 @@
-import http from "node:http";
-import fs from "node:fs";
+import express from 'express';
 import path from "node:path";
-
 const port=process.env.PORT || 3000;
 
-const server=http.createServer((req,res)=>{
-    // res.statusCode=200;
-    // res.setHeader('Content-Type','text/html');
-    res.writeHead(200,{'Content-Type':'text/html'});
-    // res.write(`${req.url}`);
-    // res.write(`${req.method}`);
-    // res.write(`${req.headers.host}`);
-   
-    /* res.write(`<h1>Hello Node</h1>`);
-    res.write(`<p>`);
-    res.write(`<b>Datetime</b> : ${new Date().toLocaleString()}`);
-    res.write(`</p>`); */
+const app=express();
 
-    if(req.url=="/" && req.method=="GET"){
-        fs.readFile(path.resolve("src/public/index.html"),{encoding:"utf-8"},(err,data)=>{
-            if(err){
-                 res.write(`<h1>Request not found</h1>`);
-                 res.end();
-            }
-            else{
-                res.write(data);
-                res.end();
-            }
-        });
-    }
-    else{
-        res.write(`<h1>404</h1>`);
-        res.end();
-    }
+app.use(express.static(path.resolve("src/public")));
 
+app.use((req,res,next)=>{
+    console.log(`App starts st ${new Date().toLocaleString()}`);
+    next();
 });
 
 
-server.listen(port,()=>{
-    console.log(`Server running at http://127.0.0.1:${port}`);  
+
+app.get("/",(req,res)=>{
+    res.setHeader('Content-Type','text/html');
+    res.status(200).send("Homepage");
+});
+
+app.get("/api",(req,res)=>{
+    res.setHeader('Content-Type','text/html');
+    // res.status(200).send("API Page");
+    res.status(200).json({name:"lorem",id:212});
+    // res.status(404).redirect("/api.html");
+});
+
+
+app.post("/post",(req,res)=>{
+    res.status(200).send("POST request successful");
+});
+
+
+/* wildcard handler */
+app.get("/*splat",(req,res)=>{
+    res.status(404).send("404,Page not found");
+    // res.status(404).redirect("/error.html")
+});
+
+app.listen(port,()=>{
+    console.log(`app running at http://127.0.0.1:${port}`); 
 });

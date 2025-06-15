@@ -5,12 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hello Node</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
         <h1>Hello Node</h1>
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Odit distinctio est tempore hic excepturi at ipsum nemo itaque! Possimus incidunt atque quibusdam, totam unde nihil impedit sed quod deserunt ducimus!</p>
-        <img src="img/image-sm.jpg" alt="" width="200" height="150">
+        <!-- <img src="img/image-sm.jpg" alt="" width="200" height="150"> -->
+
+        <form action="/search" method="get">
+            <div class="row align-items-center g-2">
+                 <div class="col-auto">
+                    <label for="query" class="form-label">Search:</label>
+                 </div>
+                <div class="col-auto">
+                     <input type="search" id="query" class="form-control" name="query" required>
+                </div>
+                <div class="col-auto">
+                    <label class="form-check-label" for="switchCheckChecked">New</label>
+                </div>
+                <div class="col-auto">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="switchCheckChecked" name="user" value="true">
+                        <label class="form-check-label" for="switchCheckChecked">Used</label>
+                </div>
+                </div>
+                
+                <div class="col-auto">
+                    <button class="btn btn-primary">Search</button>
+                </div>
+            </div>
+             
+        </form>
     </div>
+<script src="js/bootstrap.bundle.min.js"></script>    
 </body>
 </html>

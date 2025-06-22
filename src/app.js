@@ -9,8 +9,22 @@ import products from './routes/products.js';
 import bodyparser from "body-parser";
 import cookieParser from "cookie-parser";
 
+import session  from 'express-session';
+import parseurl from 'parseurl';
+
+
 
 const app=express();
+
+// trust first proxy
+app.set('trust proxy', 1);
+
+app.use(session({
+    secret:"session",
+    resave:false,
+    saveUninitialized:true,
+    cookie:{secure:false,maxAge:5000}
+}));
 
 
 // app.use(bodyparser.json());
@@ -22,7 +36,15 @@ app.use(express.static(path.resolve("src/public")));
 app.use(express.static(path.resolve("node_modules/bootstrap/dist")));
 
 app.use((req,res,next)=>{
-    // console.log(`App starts at ${new Date().toLocaleString()}`);
+
+    if(!req.session.views){req.session.views={}}
+
+     // get the url pathname
+    const pathname = parseurl(req).pathname;
+    
+    // count the views
+    req.session.views[pathname] = (req.session.views[pathname] || 0) + 1;
+
     next();
 });
 
@@ -33,8 +55,10 @@ app.get("/",(req,res)=>{
     // res.status(200).send("Homepage");
     // res.status(200).send(req.url);
     // res.status(200).send(req.query);
-    res.status(200).send(req.cookies);
-    // res.status(200).send(req.signedCookies);
+    // res.status(200).send(req.cookies);
+    // res.status(200).send(req.session);
+    // res.status(200).send(req.sessionID);
+    res.status(200).send(` Session id: ${req.sessionID}, Page views : ${req.session.views[req.url]}`);
 });
 
 app.get("/search",(req,res)=>{
@@ -47,11 +71,42 @@ app.use("/admin",admin);
 
 app.use("/product",products);
 
+const month=["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+const cars=[
+    {"name": "swift", "type": "hatchback", "price":870000},
+    {"name": "dzire", "type": "sedan", "price":980000},
+    {"name": "ciaz", "type": "sedan", "price":1100000},
+    {"name": "baleno", "type": "hatchback", "price":880000},
+    {"name": "fronx", "type": "hatchback", "price":1150000},
+    {"name": "brezza", "type": "suv", "price":1250000},
+    {"name": "grand vitara", "type": "suv", "price":1990000},
+    {"name": "alto", "type": "hatchback", "price":400000},
+    {"name": "wagon r", "type": "hatchback", "price":500000},
+    {"name": "jimny", "type": "suv", "price":1400000}
+];
+
+const phone={ model:"iphone15", color:"black", storage:128};
 
 app.get("/api",(req,res)=>{
-    res.setHeader('Content-Type','text/html');
+    res.setHeader('Content-Type','application/json');
+    res.header("Access-Control-Allow-Origin","*");                      // public api
     // res.status(200).send("API Page");
-    res.status(200).json({name:"lorem",id:212});
+    res.status(200).json(cars);
+});
+
+app.get("/api/:car",(req,res)=>{
+    
+    res.setHeader('Content-Type','application/json');
+    res.header("Access-Control-Allow-Origin","*");                      // public api
+
+    const car=req.params.car.toLowerCase();
+    let obj={};
+    
+    cars.forEach( i=>{ if( i.name==car ){ obj=i} });
+
+    res.status(200).json(obj)
+
 });
 
 app.get("/setcookie",(req,res)=>{
@@ -62,7 +117,6 @@ app.get("/setcookie",(req,res)=>{
 app.get("/getcookie",(req,res)=>{
     res.status(200).json(req.cookies);
 });
-
 
 
 /* post requests */
@@ -79,7 +133,7 @@ app.post("/signup",(req,res)=>{
         res.status(200).json(req.body);
     }
     else{
-         res.status(200).send("invalid credentials");
+        res.status(200).send("invalid credentials");
     }
 });
 

@@ -19,18 +19,21 @@
                 <div class="col-auto">
                      <input type="search" id="query" class="form-control" name="query" required>
                 </div>
-                <div class="col-auto">
-                    <label class="form-check-label" for="switchCheckChecked">New</label>
-                </div>
-                <div class="col-auto">
+                
+                <!-- <div class="col-auto">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" role="switch" id="switchCheckChecked" name="used" value="true">
                         <label class="form-check-label" for="switchCheckChecked">Used</label>
-                </div>
-                </div>
+                    </div>
+                </div> -->
                 <div class="col-auto">
                     <button class="btn btn-primary">Search</button>
                 </div>
+                 <div class="col-auto">
+                        <span class="res m-0"></span>
+                        <span class="err m-0"></span>
+                 </div>
+               
             </div>
         </form>
         <h2>Post</h2>
@@ -72,7 +75,36 @@
         console.log( data );
 
     });
-    
+
+
+    document.querySelector("#query").addEventListener("input",function(){
+
+        const x=this.value;
+        document.querySelector(".err").innerHTML=""
+        document.querySelector(".res").innerHTML=""
+
+        if(x.length>=3){
+            
+            fetch("/postapi",{method:"POST",body:JSON.stringify({q:x})}).then(i=>i.json()).then(i=>{
+
+                if(i[0].res=="no cars found"){
+                    document.querySelector(".err").innerHTML=i[0].res;
+                }
+                else{
+                    i.forEach(element => {
+                         document.querySelector(".res").innerHTML+=element.name+", ";
+                    });
+
+                }
+            }).catch(e=>{
+                console.warn(`warn: ${e}`)
+            });
+        }
+
+
+    });
+
+
 </script>
 </body>
 </html>

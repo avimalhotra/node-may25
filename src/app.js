@@ -17,19 +17,20 @@ import parseurl from 'parseurl';
 const app=express();
 
 // trust first proxy
-app.set('trust proxy', 1);
+// app.set('trust proxy', 1);
 
-app.use(session({
-    secret:"session",
-    resave:false,
-    saveUninitialized:true,
-    cookie:{secure:false,maxAge:5000}
-}));
+// app.use(session({
+//     secret:"session",
+//     resave:false,
+//     saveUninitialized:true,
+//     cookie:{secure:false,maxAge:5000}
+// }));
 
 
-// app.use(bodyparser.json());
+app.use(bodyparser.text());
+app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended:true}));
-app.use(cookieParser('secret'));
+// app.use(cookieParser('secret'));
 
 
 app.use(express.static(path.resolve("src/public")));
@@ -37,13 +38,15 @@ app.use(express.static(path.resolve("node_modules/bootstrap/dist")));
 
 app.use((req,res,next)=>{
 
-    if(!req.session.views){req.session.views={}}
+    console.log(`${new Date().toLocaleString()}`);
+
+    // if(!req.session.views){req.session.views={}}
 
      // get the url pathname
-    const pathname = parseurl(req).pathname;
+    // const pathname = parseurl(req).pathname;
     
     // count the views
-    req.session.views[pathname] = (req.session.views[pathname] || 0) + 1;
+    // req.session.views[pathname] = (req.session.views[pathname] || 0) + 1;
 
     next();
 });
@@ -66,8 +69,21 @@ app.get("/search",(req,res)=>{
     res.status(200).send(req.query);
 });
 
+let t=1;
 
-app.use("/admin",admin);
+function isAuth(req,res,next){  
+
+    if(t%2==0){
+        next();
+     }
+    else{ 
+        res.status(401).send("Unauthorized");
+    }
+
+}
+    
+
+app.use("/admin", isAuth ,admin);
 
 app.use("/product",products);
 
@@ -82,6 +98,7 @@ const cars=[
     {"name": "brezza", "type": "suv", "price":1250000},
     {"name": "grand vitara", "type": "suv", "price":1990000},
     {"name": "alto", "type": "hatchback", "price":400000},
+    {"name": "altok10", "type": "hatchback", "price":500000},
     {"name": "wagon r", "type": "hatchback", "price":500000},
     {"name": "jimny", "type": "suv", "price":1400000}
 ];
@@ -106,8 +123,23 @@ app.get("/api/:car",(req,res)=>{
     cars.forEach( i=>{ if( i.name==car ){ obj=i} });
 
     res.status(200).json(obj)
+});
+
+app.post("/postapi",(req,res)=>{
+    const x=req.body;
+    const y=JSON.parse(x).q;
+
+    const z=cars.filter(i=>i.name.includes(y));
+    
+
+    if(z.length==0){
+        res.status(200).send([{res:"no cars found"}]);}
+    else{
+        res.status(200).send(z);
+    }
 
 });
+
 
 app.get("/setcookie",(req,res)=>{
     res.cookie("appid","212");
@@ -127,6 +159,7 @@ app.post("/post",(req,res)=>{
 app.post("/login",(req,res)=>{
     res.status(200).json(req.body);
 });
+
 app.post("/signup",(req,res)=>{
     // res.status(200).json(req.body);
     if(req.body.email=="admin@mail.com" && req.body.password=="admin"){

@@ -61,6 +61,16 @@
         </form>
         <hr>
         <button class="btn btn-primary fetch">Fetch</button>
+        <hr>
+        <h3>Upload File</h3>
+        <form class="upload" method="POST" enctype="multipart/form-data">
+            <div class="row align-items-center">
+                 <div class="col-auto"><label for="upload" class="form-label">Upload</label></div>
+                 <div class="col-auto"><input multiple required accept=".pdf,.doc,.docx" type="file" class="form-control" name="resume" id="upload"></div>
+                 <div class="col-auto"><button class="btn btn-outline-primary">Upload</button></div>
+                 <div class="col-auto"><output name="msg"></output></div>
+            </div>
+        </form>
     </div>
 <script src="js/bootstrap.bundle.min.js"></script>
 <script>
@@ -102,6 +112,24 @@
         }
 
 
+    });
+
+
+    document.querySelector(".upload").addEventListener("submit",function(e){
+        e.preventDefault();
+        
+        fetch("/upload",{method:"POST",body:new FormData(this) }).then(i=>{
+            if(i.status==500){
+                throw new Error(`HTTP error! Status: ${i.status}`);
+            }
+            else{
+                i.text();
+            }
+        }).then(i=>{
+            this.msg.innerHTML="uploaded";
+        }).catch(e=>{
+             this.msg.innerHTML=e;
+        });
     });
 
 

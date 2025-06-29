@@ -12,6 +12,22 @@ import cookieParser from "cookie-parser";
 import session  from 'express-session';
 import parseurl from 'parseurl';
 
+import multer from 'multer';
+// const upload=multer({dest:"src/public/uploads/"});
+
+const storage = multer.diskStorage({
+    destination:  (req, file, cb) =>{
+      cb(null, 'src/public/uploads/')
+    },
+    filename:  (req, file, cb)=> {
+    //   cb(null, file.originalname);          // for original name 
+      cb(null, Date.now() + path.extname(file.originalname)) 
+    }
+  });
+  
+  const upload = multer({ storage: storage });
+
+
 
 
 const app=express();
@@ -32,7 +48,7 @@ app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended:true}));
 // app.use(cookieParser('secret'));
 
-
+/* public path */
 app.use(express.static(path.resolve("src/public")));
 app.use(express.static(path.resolve("node_modules/bootstrap/dist")));
 
@@ -69,21 +85,14 @@ app.get("/search",(req,res)=>{
     res.status(200).send(req.query);
 });
 
-let t=1;
-
 function isAuth(req,res,next){  
-
-    if(t%2==0){
-        next();
-     }
-    else{ 
-        res.status(401).send("Unauthorized");
-    }
-
+    let t=2;
+    if(t%2==0){ next();}
+    else{  res.status(401).send("Unauthorized"); }
 }
     
 
-app.use("/admin", isAuth ,admin);
+app.use("/admin", isAuth ,admin);                           // authentication
 
 app.use("/product",products);
 
@@ -131,7 +140,6 @@ app.post("/postapi",(req,res)=>{
 
     const z=cars.filter(i=>i.name.includes(y));
     
-
     if(z.length==0){
         res.status(200).send([{res:"no cars found"}]);}
     else{
@@ -150,7 +158,6 @@ app.get("/getcookie",(req,res)=>{
     res.status(200).json(req.cookies);
 });
 
-
 /* post requests */
 app.post("/post",(req,res)=>{
     res.status(200).send("POST request successful");
@@ -168,6 +175,15 @@ app.post("/signup",(req,res)=>{
     else{
         res.status(200).send("invalid credentials");
     }
+});
+
+/* multer  */
+// app.post("/upload", upload.single("resume") ,(req,res)=>{
+//     res.status(200).send("File Uploaded");
+// });
+
+app.post("/upload", upload.array("resume",5) ,(req,res)=>{
+    res.status(200).send("File Uploaded");
 });
 
 
